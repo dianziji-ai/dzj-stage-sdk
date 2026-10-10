@@ -9,4 +9,4 @@
 
 ★加了新的桥协议请求（比如 0.4.0 的 `stage.speak`）：网站要先上线支持，SDK 才能发版（平台先上、SDK 后发）。
 
-推到 main 以后，GitHub 会自动开一个「发版」PR，把版本号和 CHANGELOG 都算好；合并它才真正发布到 npm。
+推到 main 就自动发布：GitHub Actions 算好版本号和 CHANGELOG、提交回 main，检查（类型检查 + 编译 + 全部测试）通过就发到 npm。没有 changeset 的推送不发版。

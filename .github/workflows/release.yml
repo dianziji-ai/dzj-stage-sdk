@@ -1,7 +1,9 @@
-# 发版：推到 main 后——
-#   · 有没消化的 .changeset/*.md → 开（或更新）一个「发版」PR，版本号和 CHANGELOG 都在里面算好；
-#   · 合并了那个 PR（changeset 都消化完）→ 跑完整检查后发布到 npm，打 git tag、建 GitHub Release。
-# npm 认证走「可信发布」（OIDC，npm 网站上给每个包登记本仓库的这个工作流）：仓库里不存任何 npm 令牌。
+# 发版（推到 main 就自动发，不再开「发版」PR——站长 2026-10-10：合并 PR 这一步也要自动）：
+#   · 有没消化的 .changeset/*.md → 算版本号、写 CHANGELOG，以 github-actions 机器人提交回 main；
+#   · 接着完整检查（类型检查 + 编译 + 全部测试）通过才发布到 npm（只发 npm 上还没有的版本），并推版本 tag。
+#   · 没有 changeset 的推送：检查照跑，发布那步什么都不发。
+# ★不能「开 PR 再自动合并」：用 GITHUB_TOKEN 合并产生的推送不会再触发工作流，合了也不发。所以在同一个 job 里改版本 + 发布。
+# npm 认证走「可信发布」（OIDC，npm 网站上给每个包登记了本仓库的 release.yml——★文件名别改）：仓库里不存任何 npm 令牌。
 name: Release
 
 on:
@@ -11,24 +13,35 @@ on:
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 permissions:
-  contents: write       # 推版本提交、打 tag、建 Release
-  pull-requests: write  # 开「发版」PR
-  id-token: write       # npm 可信发布（OIDC）
+  contents: write  # 提交版本号、推 tag
+  id-token: write  # npm 可信发布（OIDC）
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
           registry-url: https://registry.npmjs.org
       - run: npm ci
-      - uses: changesets/action@v2
-        with:
-          version-script: npm run version-packages
-          publish-script: npm run release
-          pr-title: 发版
-          commit-message: 发版
+      - name: 版本号 + CHANGELOG（有 changeset 才做），提交回 main
+        run: |
+          if ls .changeset/*.md 2>/dev/null | grep -qv 'README.md$'; then
+            npm run version-packages
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "发版"
+            git push
+          else
+            echo "没有 changeset，不改版本"
+          fi
+      - name: 检查 + 发布到 npm
+        run: npm run release
+      - name: 推版本 tag
+        run: git push --tags
