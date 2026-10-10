@@ -44,7 +44,7 @@ const pick = (c) => settings.choiceMode === 'send' ? 直接发(c) : 用 fillChoi
 
 ## 界面是舞台自己的
 
-模块代码别改（`packages/` 只读）。界面三档改法：
+模块代码别改（别动 `node_modules` 里的，升级就被覆盖）。界面三档改法：
 1. **换颜色**：覆盖 `--dzj-ap-accent / --dzj-ap-track / --dzj-ap-fg / --dzj-ap-muted`（`.dzj-ap.你的类, .dzj-ap-settings.你的类 { … }`），再给组件传 `className`。
 2. **尺寸 / 窄屏只留图标**：`className` 加尺寸；`dzj-ap-iconic` 或媒体查询藏 `.dzj-ap-label`。
 3. **整个换掉**：只用 hook——`useAutoPlay` 给 `on / toggle / running / duration / cycle`（倒计时动画用 `duration` 毫秒、`key={cycle}`），`useSettings()` 读写全部设置，自己画按钮和面板。`<SettingsPanel sections={['text','auto']} />` 可以只显示舞台支持的几节。
