@@ -34,7 +34,7 @@
     "test:watch": "vitest"
   },
   "peerDependencies": {
-    "@dianziji/stage": "^0.3.0 || ^0.4.0",
+    "@dianziji/stage": ">=0.3.0",
     "react": ">=19"
   },
   "devDependencies": {

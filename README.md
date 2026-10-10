@@ -16,7 +16,7 @@
 
 ```bash
 npm install
-npm run check   # 类型检查 + 全部测试（带覆盖率门槛）+ 编译
+npm run check   # 类型检查 + 编译 + 全部测试（带覆盖率门槛）
 ```
 
 - 包之间按依赖顺序编译：stage → stage-settings → stage-panel / stage-voice / stage-sfx。
