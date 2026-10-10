@@ -3,6 +3,12 @@
 官方维护的版本记录，发布在 npm。升级：`npm update @dianziji/stage`（或对应包名）。新版本由 Changesets 自动生成在最上面。
 
 
+## 0.2.3
+
+### Patch Changes
+
+- 6fd6ad9: README 改成 npm 包的说法：怎么装、去哪查 API、别改 node_modules；文档链接改成 GitHub 绝对地址（原来的相对路径在 npm 上是断链）。
+
 ## 0.2.2 — 2026-10-09
 
 - 依赖范围放宽到 `@dianziji/stage` 0.4（角色配音那一版）；代码没改。
