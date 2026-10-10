@@ -1,6 +1,6 @@
 {
   "name": "@dianziji/stage-settings",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "电子姬舞台的播放设置：文本速度（逐字打出）、字号、动效、选项行为、自动播放（字数 × 每字停留 + 句末停顿），一个面板全调，存玩家本机（独立模块，只依赖 react）",
   "license": "SEE LICENSE IN LICENSE",
   "type": "module",
