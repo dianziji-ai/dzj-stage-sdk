@@ -2,6 +2,12 @@
 
 官方维护的版本记录，发布在 npm。升级：`npm update @dianziji/stage`（或对应包名）。新版本由 Changesets 自动生成在最上面。
 
+## 0.1.1
+
+### Patch Changes
+
+- 629fc59: 补上 README（怎么接、注意事项）。
+
 ## 0.1.0 — 2026-10-09
 
 首个版本：角色配音。
