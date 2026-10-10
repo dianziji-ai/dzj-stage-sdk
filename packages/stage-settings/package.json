@@ -1,0 +1,45 @@
+{
+  "name": "@dianziji/stage-settings",
+  "version": "0.2.0",
+  "description": "电子姬舞台的播放设置：文本速度（逐字打出）、字号、动效、选项行为、自动播放（字数 × 每字停留 + 句末停顿），一个面板全调，存玩家本机（独立模块，只依赖 react）",
+  "license": "SEE LICENSE IN LICENSE",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dianziji-ai/stage-sdk.git",
+    "directory": "packages/stage-settings"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./styles.css": "./dist/styles.css"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "test": "vitest run --coverage",
+    "test:watch": "vitest"
+  },
+  "peerDependencies": {
+    "react": ">=19"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^16.3.3",
+    "jsdom": "^30.1.2",
+    "vitest": "^5.0.3",
+    "@vitest/coverage-v8": "^5.0.3"
+  }
+}

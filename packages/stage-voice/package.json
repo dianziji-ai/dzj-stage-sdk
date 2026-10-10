@@ -1,0 +1,47 @@
+{
+  "name": "@dianziji/stage-voice",
+  "version": "0.1.0",
+  "description": "电子姬舞台的角色配音：一个 hook 管检查（字数 / 没配声音 / 还没写完）、排队（同时只请求一句、最多预取下一句）、播放、出错一次就停；设置并在 stage-settings 的「配音」一节",
+  "license": "SEE LICENSE IN LICENSE",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dianziji-ai/stage-sdk.git",
+    "directory": "packages/stage-voice"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./styles.css": "./dist/styles.css"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "test": "vitest run --coverage",
+    "test:watch": "vitest"
+  },
+  "peerDependencies": {
+    "@dianziji/stage": ">=0.4.0",
+    "@dianziji/stage-settings": ">=0.2.0",
+    "react": ">=19"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^16.3.3",
+    "jsdom": "^30.1.2",
+    "vitest": "^5.0.3",
+    "@vitest/coverage-v8": "^5.0.3"
+  }
+}

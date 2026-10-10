@@ -1,0 +1,48 @@
+{
+  "compilerOptions": {
+    "target": "es2023",
+    "lib": [
+      "ES2023",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "types": [
+      "vite/client"
+    ],
+    "allowImportingTsExtensions": true,
+    "allowArbitraryExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "skipLibCheck": true,
+    "noEmit": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "paths": {
+      "@dianziji/stage": [
+        "./packages/stage/src/index.ts"
+      ],
+      "@dianziji/stage/client": [
+        "./packages/stage/src/client/index.ts"
+      ],
+      "@dianziji/stage/react": [
+        "./packages/stage/src/react/index.ts"
+      ],
+      "@dianziji/stage-settings": [
+        "./packages/stage-settings/src/index.ts"
+      ],
+      "@dianziji/stage-panel": [
+        "./packages/stage-panel/src/index.ts"
+      ],
+      "@dianziji/stage-voice": [
+        "./packages/stage-voice/src/index.ts"
+      ]
+    }
+  },
+  "include": [
+    "packages/*/src"
+  ]
+}
