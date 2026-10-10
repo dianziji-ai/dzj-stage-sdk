@@ -1,6 +1,6 @@
 {
   "name": "@dianziji/stage-sfx",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "电子姬舞台的界面音效：悬停 / 点击 / 确认 / 取消 / 打开 / 开关 / 翻页 / 出错，WebAudio 现场合成（零素材零请求）；所有看起来能点的东西自动有声，设置并在 stage-settings 的「音效」一节",
   "license": "SEE LICENSE IN LICENSE",
   "type": "module",
