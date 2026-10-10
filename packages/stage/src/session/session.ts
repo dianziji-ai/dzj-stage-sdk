@@ -1,6 +1,6 @@
 import { createSaver, type Saver } from './saver'
 import { readZones, type StageZones } from './zones'
-import { closedOf, lastAiText, latestZones, stabilize, writingZone } from './zonetrack'
+import { closedOf, lastAiText, latestZones, liveText, stabilize, writingZone } from './zonetrack'
 import { splitState, StageError, type StageClient, type StageMessage, type StageSave, type StageSnapshot } from '../client'
 
 /**
@@ -148,7 +148,7 @@ export function createSession<S = StageSave>(opts: SessionOptions<S>): Session<S
     save: normalize(snap.save),
     canSave,
     lastTurn: null,
-    zones: readZones(snap.live ? snap.live.text : lastAiText(snap.history), snap),
+    zones: readZones(snap.live ? liveText(snap.live.text, snap.slots ?? []) : lastAiText(snap.history), snap),
     held: latestZones(snap.history, (raw) => readZones(raw, snap)),
     closed: {},
     writing: null,
@@ -163,7 +163,7 @@ export function createSession<S = StageSave>(opts: SessionOptions<S>): Session<S
   const ids = (snap.slots ?? []).map((sl) => sl.zone)
   const read = (raw: string) => readZones(raw, snap)
   const zonesOf = (raw: string) => {
-    const zones = stabilize(read(raw), state.zones)
+    const zones = stabilize(read(liveText(raw, snap.slots ?? [])), state.zones)
     return { zones, closed: closedOf(raw, zones) }
   }
   let frame: number | null = null

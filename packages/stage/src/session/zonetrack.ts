@@ -39,6 +39,15 @@ export function closedOf(raw: string, zones: StageZones): Record<string, boolean
  * 正文里别的尖括号（<b>）不算，只认卡里注册过的区。没开始写 / 全写完＝null。
  */
 export function writingZone(raw: string, ids: string[]): string | null {
+  const open = openZone(raw, ids)
+  if (open) return open
+  const last = [...raw.matchAll(/<\s*\/\s*([A-Za-z0-9_一-鿿-]+)\s*>/g)].map((m) => m[1]).filter((z) => ids.includes(z)).pop()
+  if (!last) return null
+  return ids[ids.indexOf(last) + 1] ?? null
+}
+
+/** 最后一个打开、还没关上的区（卡里注册过的）；没有＝null */
+function openZone(raw: string, ids: string[]): string | null {
   let open: string | null = null
   for (const m of raw.matchAll(/<\s*(\/?)\s*([A-Za-z0-9_一-鿿-]+)\s*>/g)) {
     if (!ids.includes(m[2])) continue
@@ -46,10 +55,19 @@ export function writingZone(raw: string, ids: string[]): string | null {
       if (open === m[2]) open = null
     } else open = m[2]
   }
-  if (open) return open
-  const last = [...raw.matchAll(/<\s*\/\s*([A-Za-z0-9_一-鿿-]+)\s*>/g)].map((m) => m[1]).filter((z) => ids.includes(z)).pop()
-  if (!last) return null
-  return ids[ids.indexOf(last) + 1] ?? null
+  return open
+}
+
+/**
+ * 生成中拿去解析的原文：正在写的是数据区（yaml，如剧本式正文的列表）→ 去掉还没写完的最后一行。
+ * 半行 YAML（`  说` 只写了键、引号没合上）会让整区解析失败，列表一下变空、下一截又回来＝界面闪；去掉半行，解析出来的条目只增不减。
+ * 正文这类 markdown 区不动（就该一个字一个字出）。
+ */
+export function liveText(raw: string, slots: { zone: string; kind?: string | null }[]): string {
+  const open = openZone(raw, slots.map((sl) => sl.zone))
+  const kind = open ? slots.find((sl) => sl.zone === open)?.kind : null
+  if (kind !== 'yaml' && kind !== 'data') return raw
+  return raw.slice(0, raw.lastIndexOf('\n') + 1)
 }
 
 /**

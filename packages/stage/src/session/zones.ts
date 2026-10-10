@@ -38,6 +38,7 @@ export function readZones(text: string, snap: Pick<StageSnapshot, 'slots'>, reas
  *   zoneText(zones, 'thought', '心声')     → '今天也想…'；没写 → ''（不给 key：取正文这类 markdown 区的原文）
  *   zoneList(zones, 'action')              → ['敲门', '离开']；没写 → []
  *   zoneData(zones, 'scene')               → { 地点: 'home', … }；没写 / 不是数据区 → {}
+ *   zoneRows(zones, 'narrative')           → [{ 谁: '旁白', 说: '…' }, …]；没写 / 不是列表 → []
  */
 
 /** 数据区（yaml）整块：没写 / 不是数据区 → {} */
@@ -68,4 +69,15 @@ export function zoneText(zones: StageZones, zone: string, key?: string): string 
 export function zoneList(zones: StageZones, zone: string): string[] {
   const z = zones[zone]
   return z?.type === 'action' ? z.value.map((s) => s.trim()).filter(Boolean) : []
+}
+
+/**
+ * 列表区（yaml 列表，如剧本式正文 `- 谁: … 说: …`）的每一条：没写 / 不是列表 → []。
+ * closed=false（这个区还在写）：最后一条可能只写了一半（键有了、值还没写完），不给——界面只显示写完的条目。
+ */
+export function zoneRows(zones: StageZones, zone: string, closed = true): Record<string, unknown>[] {
+  const z = zones[zone]
+  if (z?.type !== 'data' || !Array.isArray(z.value)) return []
+  const rows = z.value.filter((r): r is Record<string, unknown> => !!r && typeof r === 'object' && !Array.isArray(r))
+  return closed ? rows : rows.slice(0, -1)
 }

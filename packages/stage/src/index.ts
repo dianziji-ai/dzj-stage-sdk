@@ -11,7 +11,7 @@
 export * from './client'
 export { createSaver, type SaveStatus, type Saver } from './session/saver'
 export { aiTurns, createSession, saidBefore, type Session, type SessionOptions, type SessionState, type TurnResult } from './session/session'
-export { readZones, zoneData, zoneList, zoneNum, zoneText, type StageZone, type StageZones } from './session/zones'
+export { readZones, zoneData, zoneList, zoneNum, zoneRows, zoneText, type StageZone, type StageZones } from './session/zones'
 export { imageRefs, imageUrl, resolveImages, stripImages } from './session/images'
 export { imageTags, imageVocab, pickImage, type PickDim, type PickOptions } from './session/pick'
 export { pickZone, turnProgress, writingZone, type TurnProgress, type ZoneOptions } from './session/zonetrack'

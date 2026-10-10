@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { zoneData, zoneList, zoneNum, zoneText, type StageZones } from '../../src/index'
+import { zoneData, zoneList, zoneNum, zoneRows, zoneText, type StageZones } from '../../src/index'
 
 const z: StageZones = {
   status: { label: '状态', type: 'data', value: { 好感变化: 3, 降: '-2', 加: '+5', 心情: ' 兴奋 ', 坏: 'abc', 空: '' } },
@@ -31,5 +31,16 @@ describe('安全取值', () => {
     expect(zoneList(z, 'status')).toEqual([])
     expect(zoneData(z, 'weird')).toEqual({})
     expect(zoneData(z, 'nope')).toEqual({})
+  })
+  it('列表区：一条一条；还在写＝不给最后一条（可能是半截）；不是列表 → 空数组', () => {
+    const rows: StageZones = {
+      narrative: { label: '正文', type: 'data', value: [{ 谁: '旁白', 说: '雨停了' }, '杂行', { 谁: '电子姬', 说: '才' }] },
+    }
+    expect(zoneRows(rows, 'narrative')).toEqual([{ 谁: '旁白', 说: '雨停了' }, { 谁: '电子姬', 说: '才' }])
+    expect(zoneRows(rows, 'narrative', false)).toEqual([{ 谁: '旁白', 说: '雨停了' }])
+    expect(zoneRows(z, 'status')).toEqual([]) // 数据区但不是列表
+    expect(zoneRows(z, 'weird')).toEqual([]) // 列表里没有对象
+    expect(zoneRows(z, 'narrative')).toEqual([]) // 散文区
+    expect(zoneRows(z, 'nope')).toEqual([])
   })
 })

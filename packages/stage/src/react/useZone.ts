@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { pickZone, turnProgress, zoneData, zoneList, zoneText, type StageZone, type TurnProgress, type ZoneOptions } from '..'
+import { pickZone, turnProgress, zoneData, zoneList, zoneRows, zoneText, type StageZone, type TurnProgress, type ZoneOptions } from '..'
 import { shallowEqual } from './shallowEqual'
 import { useStage } from './useStage'
 
@@ -42,10 +42,21 @@ export function useZoneList(id: string, opts?: ZoneOptions): string[] {
   return useMemo(() => (z ? zoneList({ [id]: z }, id) : NONE), [z, id])
 }
 
+/**
+ * 列表区的每一条（剧本式正文这类 `- 谁: … 说: …`）；没有＝[]。
+ * 生成中这个区还没写完：只给写完的条目（最后一条可能是半截），句子只增不减地往外冒。回看 / 写完＝全部。
+ */
+export function useZoneRows(id: string, opts?: ZoneOptions): Record<string, unknown>[] {
+  const z = useZone(id, opts)
+  const closed = useStage((s) => !s.busy || !!s.closed[id])
+  return useMemo(() => (z ? zoneRows({ [id]: z }, id, closed) : ROWS), [z, id, closed])
+}
+
 /** 这一轮写到哪儿了：正在写哪个区、进度 0–1（按区在卡里的位置）；没在生成＝null（换区 / 区写完时才变，不是每个字都变） */
 export function useTurnProgress(): TurnProgress | null {
   return useStage((s) => turnProgress(s, s.snap.slots ?? []), shallowEqual)
 }
 
 const EMPTY: Record<string, unknown> = Object.freeze({}) as Record<string, unknown>
+const ROWS: Record<string, unknown>[] = Object.freeze([]) as unknown as Record<string, unknown>[]
 const NONE: string[] = Object.freeze([]) as unknown as string[]

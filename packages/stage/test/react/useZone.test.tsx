@@ -2,8 +2,8 @@
 import { act, render, screen } from '@testing-library/react'
 import { Profiler } from 'react'
 import { describe, expect, it } from 'vitest'
-import { useWritingZone, useZone, useZoneData, useZoneList, useZoneText } from '../../src/react'
-import { withSession, frame, setupReactTests } from './helpers'
+import { useWritingZone, useZone, useZoneData, useZoneList, useZoneRows, useZoneText } from '../../src/react'
+import { withSession, frame, setupReactTests, snapOf } from './helpers'
 
 setupReactTests()
 
@@ -125,5 +125,20 @@ describe('按区订阅：只有变了的区才重画', () => {
     await act(() => session.send('你好'))
     act(() => done('<narrative>\n好\n</narrative>\n<action>\n- 摸摸头\n- 去公园\n</action>'))
     expect(screen.getByTestId('l').textContent).toBe('摸摸头|去公园')
+  })
+
+  it('useZoneRows：剧本式正文生成中只给写完的条目，写完给全部', async () => {
+    const { session, wrap, delta, done } = withSession(snapOf({ slots: [{ zone: 'narrative', kind: 'yaml', role: 'content' }] as never }))
+    function R() {
+      const rows = useZoneRows('narrative')
+      return <i data-testid="r">{rows.map((r) => String(r['说'])).join('|')}</i>
+    }
+    render(<R />, { wrapper: wrap })
+    await act(() => session.send('你好'))
+    act(() => delta("<narrative>\n- 谁: '旁白'\n  说: '雨停了'\n- 谁: '电子姬'\n  说: '才"))
+    await act(frame)
+    expect(screen.getByTestId('r').textContent).toBe('雨停了')
+    act(() => done("<narrative>\n- 谁: '旁白'\n  说: '雨停了'\n- 谁: '电子姬'\n  说: '才没有呢'\n</narrative>"))
+    expect(screen.getByTestId('r').textContent).toBe('雨停了|才没有呢')
   })
 })
