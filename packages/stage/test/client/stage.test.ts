@@ -175,6 +175,8 @@ describe('请求', () => {
     const { site, stage } = await connected()
     const cases: [() => Promise<unknown>, string, unknown][] = [
       [() => stage.send('你好'), 'send', { text: '你好' }],
+      [() => stage.send('你好', { zones: ['scene', 'narrative'] }), 'send', { text: '你好', zones: ['scene', 'narrative'] }],
+      [() => stage.send('你好', { zones: [] }), 'send', { text: '你好' }],
       [() => stage.stop(), 'stop', undefined],
       [() => stage.regenerate(), 'regenerate', undefined],
       [() => stage.older(), 'older', undefined],

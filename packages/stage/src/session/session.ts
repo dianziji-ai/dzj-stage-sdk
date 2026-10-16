@@ -1,7 +1,7 @@
 import { createSaver, type Saver } from './saver'
 import { readZones, type StageZones } from './zones'
 import { closedOf, lastAiText, latestZones, liveText, stabilize, writingZone } from './zonetrack'
-import { splitState, StageError, type StageClient, type StageMessage, type StageSave, type StageSnapshot } from '../client'
+import { splitState, StageError, type StageClient, type StageMessage, type StageSave, type StageSnapshot, type SendOptions } from '../client'
 
 /**
  * 一局游戏的会话：舞台要的「聊天 + 历史 + 存档」全在这里，游戏只写自己的规则。
@@ -92,8 +92,11 @@ export type SessionState<S> = {
 export type Session<S> = {
   getState: () => SessionState<S>
   subscribe: (fn: () => void) => () => void
-  /** 发一句话（原样发；要附状态自己 withState 拼）。成功发出去＝true（之后的事看 live / error） */
-  send: (text: string) => Promise<boolean>
+  /**
+   * 发一句话（原样发；要附状态自己 withState 拼）。成功发出去＝true（之后的事看 live / error）。
+   * opts.zones（0.6.0）＝本轮分区白名单：网站只拼这几个区的说明，模型只写这几个区（见 client 的 SendOptions）；「再说一次」沿用同一份
+   */
+  send: (text: string, opts?: SendOptions) => Promise<boolean>
   /** 「再说一次」：把出错的那句原样再发 */
   retry: () => Promise<boolean>
   dismissError: () => void
@@ -132,6 +135,7 @@ export function createSession<S = StageSave>(opts: SessionOptions<S>): Session<S
 
   let tmp = 0 // 本地插进去的消息用负数 id，不会和服务器的撞
   let lastSent = ''
+  let lastOpts: SendOptions | undefined
   /** 这一轮网站已经报过「在生成」：等它结束（live 变 null）时结算一次。进来时那一轮还在生成也算 */
   let sawLive = !!snap.live
   const subs = new Set<() => void>()
@@ -293,16 +297,17 @@ export function createSession<S = StageSave>(opts: SessionOptions<S>): Session<S
     set({ save: normalize(e.state) })
   })
 
-  const send: Session<S>['send'] = async (text) => {
+  const send: Session<S>['send'] = async (text, opts) => {
     const t = text.trim()
     if (!t || state.busy) return false
     lastSent = t
+    lastOpts = opts?.zones?.length ? { zones: [...opts.zones] } : undefined
     const id = --tmp
     // 一点就先把这句显示出来 + 进入「生成中」（请求要等一会儿，别让画面没反应）；发失败再撤回
     // 新一轮开始：这一轮的分区清空（还没写），hold 的区用最近写过的值
     set({ view: null, error: null, busy: true, live: '', reasoning: '', said: splitState(t).text, history: [...state.history, { id, role: 'user', kind: null, content: t, created_at: new Date().toISOString() }], zones: {}, closed: {}, writing: null })
     try {
-      await stage.send(t)
+      await stage.send(t, lastOpts)
       return true
     } catch (e) {
       const err = e instanceof StageError ? e : new StageError('error', '出了点问题')
@@ -333,7 +338,7 @@ export function createSession<S = StageSave>(opts: SessionOptions<S>): Session<S
       return () => subs.delete(fn)
     },
     send,
-    retry: () => (state.error?.retry ? send(state.error.retry) : Promise.resolve(false)),
+    retry: () => (state.error?.retry ? send(state.error.retry, lastOpts) : Promise.resolve(false)),
     dismissError: () => set({ error: null }),
     loadOlder,
     async stop() {

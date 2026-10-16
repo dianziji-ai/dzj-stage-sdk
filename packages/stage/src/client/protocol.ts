@@ -24,6 +24,7 @@ export type StageMethod = 'send' | 'stop' | 'regenerate' | 'older' | 'save' | 'g
 type Envelope<T extends string, D> = { dzj: 'stage'; v: typeof PROTOCOL; type: T } & D
 
 export type ReadyMessage = Envelope<'ready', { sdk: string }>
+/** send 的 args：{ text, zones? }（zones＝本轮分区白名单，0.6.0 加的可选字段，见 stage.ts 的 SendOptions） */
 export type RequestMessage = Envelope<'request', { id: string; method: StageMethod; args?: unknown }>
 export type InitMessage = Envelope<'init', { snapshot: StageSnapshot }>
 export type UpdateMessage = Envelope<'update', { patch: Partial<StageSnapshot> }>

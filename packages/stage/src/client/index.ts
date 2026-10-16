@@ -12,6 +12,7 @@
  * 会话引擎（乐观发送、重试、分区跟踪、存档器）在 @dianziji/stage，React 外壳在 @dianziji/stage/react。
  */
 export * from './types'
-export { createStage, STAGE_TOOLS, StageError, type SaveSource, type SnapshotListener, type StageClient, type StageEvent, type StageOp, type StageTool } from './stage'
+export { createStage, STAGE_TOOLS, StageError, type SaveSource, type SnapshotListener, type StageClient,
+  type SendOptions, type StageEvent, type StageOp, type StageTool } from './stage'
 export { PROTOCOL, isBridgeMessage, type StageMethod, type ToSite, type ToStage } from './protocol'
 export { splitState, withState } from './state'

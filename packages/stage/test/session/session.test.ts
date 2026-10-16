@@ -35,6 +35,7 @@ function fakeStage(start: StageSnapshot = snapOf(), older: StageMessage[] = []) 
   const subs = new Set<SnapshotListener>()
   const evs = new Set<(e: StageEvent) => void>()
   const sent: string[] = []
+  const sentOpts: (unknown | undefined)[] = []
   const saves: { body: StageSave | null; source?: SaveSource }[] = []
   const reports: { op: string; code: string }[] = []
   const calls: string[] = []
@@ -50,13 +51,14 @@ function fakeStage(start: StageSnapshot = snapOf(), older: StageMessage[] = []) 
       subs.add(fn)
       return () => subs.delete(fn)
     },
-    send: async (text: string) => {
+    send: async (text: string, opts?: unknown) => {
       if (sendError) {
         const e = sendError
         sendError = null
         throw e
       }
       sent.push(text)
+      sentOpts.push(opts)
     },
     stop: async () => void calls.push('stop'),
     regenerate: async () => void calls.push('regenerate'),
@@ -83,7 +85,7 @@ function fakeStage(start: StageSnapshot = snapOf(), older: StageMessage[] = []) 
   } as unknown as StageClient
   return {
     stage,
-    sent,
+    sent, sentOpts,
     saves,
     reports,
     calls,
@@ -540,3 +542,27 @@ describe('createSession', () => {
       s.dispose()
     })
   })})
+
+describe('分区白名单（send 的 zones）', () => {
+  beforeEach(() => vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] }))
+  afterEach(() => vi.useRealTimers())
+  it('传了就原样交给网站；空数组不传；「再说一次」沿用同一份', async () => {
+    const f = fakeStage()
+    const s = createSession({ stage: f.stage, snapshot: f.snap })
+    expect(await s.send('白天', { zones: ['scene', 'narrative'] })).toBe(true)
+    expect(f.sentOpts.at(-1)).toEqual({ zones: ['scene', 'narrative'] })
+    f.turn('白天')
+    f.done('<scene>x</scene>')
+    await flush()
+    expect(await s.send('傍晚', { zones: [] })).toBe(true)
+    expect(f.sentOpts.at(-1)).toBeUndefined()
+    f.turn('傍晚')
+    f.done('y')
+    await flush()
+    f.failNextSend(new StageError('network', '断了'))
+    expect(await s.send('深夜', { zones: ['diary'] })).toBe(false)
+    expect(await s.retry()).toBe(true)
+    expect(f.sentOpts.at(-1)).toEqual({ zones: ['diary'] })
+    s.dispose()
+  })
+})

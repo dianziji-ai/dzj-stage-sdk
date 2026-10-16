@@ -56,6 +56,15 @@ export type StageEvent =
 /** 快照变了：snap＝最新整份，changed＝这次变了哪几项（init 时是全部） */
 export type SnapshotListener = (snap: StageSnapshot, changed: readonly (keyof StageSnapshot)[]) => void
 
+/**
+ * 发话的选项（0.6.0）。
+ * zones：本轮分区白名单（区 id）。网站拼提示词时只拼这几个区的说明和骨架，其余区整段不拼、模型写不出来——
+ *   舞台按玩家所在的场景 / 幕决定这一轮要哪些区（白天不写日记、情愫低不写心声、直播中只要直播区……），不用在提示词里绕。
+ *   不传 / 传空＝全部区（和以前一样）。写错的 id 网站忽略；一个都对不上就按全部区走，不会把卡打哑。
+ *   没写的区在舞台这边就是「没写」：hold 的区沿用上一轮，取数的函数返回空 / null，onTurn 里照常用 zoneNum / zoneText 安全取值。
+ */
+export type SendOptions = { zones?: readonly string[] }
+
 export type StageClient = {
   /** 等网站给第一份快照（StageBoot 用）。不在网站里打开 / 网站没回 → StageError('unauthorized') */
   ready: () => Promise<StageSnapshot>
@@ -67,7 +76,7 @@ export type StageClient = {
    * 发一句话。text 原样发出去（SDK 不往里加任何东西）；想让 AI 知道「此刻状态」就用 withState(话, 状态) 拼好再发。
    * 开始生成了就 resolve（网站已把「在生成」推过来，不等写完）；没发出去（能量不够这类）就 reject。之后的流式、写完、失败都看快照的 live / history / error。
    */
-  send: (text: string) => Promise<void>
+  send: (text: string, opts?: SendOptions) => Promise<void>
   /** 停止生成（已经写出来的字保留） */
   stop: () => Promise<void>
   /** 重新生成最后一条 AI 回复（消耗能量） */
@@ -230,7 +239,7 @@ export function createStage(opts: { parent?: Window; self?: Window } = {}): Stag
       return () => snapSubs.delete(fn)
     },
 
-    send: (text) => request('send', { text }),
+    send: (text, o) => request('send', o?.zones?.length ? { text, zones: o.zones.map(String) } : { text }),
     stop: () => request('stop'),
     regenerate: () => request('regenerate'),
     older: () => request('older'),
