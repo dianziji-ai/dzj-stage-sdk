@@ -10,7 +10,7 @@ describe('桥消息', () => {
     }
   })
 
-  it('网站能打开的工具就这五个', () => {
-    expect([...STAGE_TOOLS]).toEqual(['model', 'mod', 'session', 'memory', 'chat', 'bgm'])
+  it('网站能打开的工具（0.7.0 加 bgm 播放器、voice＝购买语音包）', () => {
+    expect([...STAGE_TOOLS]).toEqual(['model', 'mod', 'session', 'memory', 'chat', 'bgm', 'voice'])
   })
 })

@@ -14,10 +14,10 @@ export const PROTOCOL = 1
 /**
  * 网站能替舞台打开的工具：
  *   model 换模型 / 调参数 · mod 挂 MOD · session 本局（设定、存档、图册、消费记录）· memory 记忆 · chat 切到对话模式（改 / 删 / 回溯记录在那里做）
- *   · bgm 背景音乐播放器（0.7.0）
+ *   · bgm 背景音乐播放器（0.7.0）· voice 购买语音包（0.7.0，配音字数不够时用）
  */
-export type StageTool = 'model' | 'mod' | 'session' | 'memory' | 'chat' | 'bgm'
-export const STAGE_TOOLS: readonly StageTool[] = ['model', 'mod', 'session', 'memory', 'chat', 'bgm']
+export type StageTool = 'model' | 'mod' | 'session' | 'memory' | 'chat' | 'bgm' | 'voice'
+export const STAGE_TOOLS: readonly StageTool[] = ['model', 'mod', 'session', 'memory', 'chat', 'bgm', 'voice']
 
 /** 舞台能请网站做的事（speak＝0.4.0 角色配音 · music＝0.7.0 背景音乐切歌） */
 export type StageMethod = 'send' | 'stop' | 'regenerate' | 'older' | 'save' | 'gallery' | 'open' | 'speak' | 'music'

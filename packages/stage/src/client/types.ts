@@ -89,7 +89,14 @@ export type StageGallery = {
 }
 
 /** 玩家的公开资料 */
-export type StageUser = { id: number; username: string; name: string; avatar: string }
+export type StageUser = {
+  id: number
+  username: string
+  name: string
+  avatar: string
+  /** ★0.7.0：玩家语音包还剩多少字（配音按字数扣）。开配音前看够不够，不够 stage.open('voice') 让网站弹购买；老网站没这项＝undefined */
+  voice_chars?: number
+}
 
 /** 正在生成的这一轮：said＝玩家说的那句（已去掉 <dj_state>），text＝到目前为止的原文，reasoning＝思维链（多数舞台用不到） */
 export type StageLive = { said: string; text: string; reasoning: string }
