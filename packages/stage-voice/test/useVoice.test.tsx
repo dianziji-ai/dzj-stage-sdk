@@ -94,6 +94,29 @@ describe('useVoice', () => {
     expect(calls).toHaveLength(0)
   })
 
+  it('念过这句后打开浮层（日记 / 相册）再关上：不从头再念一遍', async () => {
+    const { calls, rerender } = setup()
+    await act(async () => calls[0].ok('https://r2.test/1.mp3'))
+    await flush()
+    expect(played).toEqual(['https://r2.test/1.mp3'])
+    rerender({ paused: true })
+    await flush()
+    rerender({ paused: false })
+    await flush()
+    expect(played).toEqual(['https://r2.test/1.mp3'])
+  })
+
+  it('这句还没开播就被浮层挡住：关上浮层照常念', async () => {
+    const { calls, rerender } = setup()
+    rerender({ paused: true })
+    await act(async () => calls[0].ok('https://r2.test/1.mp3'))
+    await flush()
+    expect(played).toEqual([])
+    rerender({ paused: false })
+    await flush()
+    expect(played).toEqual(['https://r2.test/1.mp3'])
+  })
+
   it('暂停（玩家在干别的）：不请求；开关能切', () => {
     const { result, calls, store } = setup(true, { paused: true })
     expect(calls).toHaveLength(0)

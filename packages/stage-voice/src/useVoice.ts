@@ -247,7 +247,9 @@ export function useVoice(o: UseVoiceOptions): Voice {
     const e = engine.current
     if (!active) {
       stop()
-      started.current = null
+      // 外面盖了浮层（日记 / 相册 / 地图…，paused）只是停一下：这句已经开播过就记着，关上浮层不从头再念；
+      // 玩家关掉配音 / 跳过才当没念过（重新打开时从这句念起）
+      if (!o.paused) started.current = null
       return
     }
     if (started.current !== pos) {
