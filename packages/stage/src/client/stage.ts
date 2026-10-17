@@ -97,8 +97,19 @@ export type StageClient = {
    * 一般不直接调：用 @dianziji/stage-voice 的 useVoice，它管检查、排队、预取、出错就停。
    */
   speak: (line: { who: string; text: string; emotion?: string }) => Promise<StageSpeech>
-  /** 打开网站自己的工具（换模型、挂 MOD、本局、记忆、切到对话）。舞台不用自己做这些面板。没连上网站＝false */
+  /** 打开网站自己的工具（换模型、挂 MOD、本局、记忆、切到对话、背景音乐播放器）。舞台不用自己做这些面板。没连上网站＝false */
   open: (tool: StageTool) => boolean
+  /**
+   * 背景音乐切歌（0.7.0）：请网站自己的播放器换到卡曲库（snap.bgm）里的某一首，淡出旧曲再换。
+   * name＝曲名，或曲名开头（曲库按「家·深夜｜There is Romance」这样起名，传「家·深夜」就行）。
+   * 只换「放哪首」，不替玩家开声音：玩家把音乐关了＝记下这首，等他自己打开时放它。
+   * 默认单曲循环这首（播放器切到「单曲循环」，直到舞台再切歌或玩家自己换）——场景音乐放完不会跑到别的场景那首；
+   * opts.loop＝false：不改玩家的播放顺序。
+   * opts.volume＝相对音量 0~1（实际＝玩家在播放器里调的音量 × 它，不改玩家的设置）；不传＝保持上次给的（一开始是 1）。
+   * 同一首正在放＝不重播，只调循环 / 音量（可以每次换场景都调；也能拿来做「表演时压低音乐」：再调一次同一首、volume 小一点）。
+   * 曲库里没有这首、没连上网站＝false。
+   */
+  music: (name: string, opts?: { loop?: boolean; volume?: number }) => boolean
   /** 网站上的页面地址（比如 siteUrl('/recharge') 去充值）；连上之前只给路径本身 */
   siteUrl: (path: string) => string
   /** 订阅客户端上的事（存好了 / 失败了），返回取消订阅 */
@@ -257,6 +268,14 @@ export function createStage(opts: { parent?: Window; self?: Window } = {}): Stag
     open(tool) {
       if (!parent || !snap || !STAGE_TOOLS.includes(tool)) return false
       request('open', { tool }).catch(() => {})
+      return true
+    },
+
+    music(name, o) {
+      const want = name.trim()
+      if (!parent || !snap || !want || !snap.bgm.some((t) => t.name.startsWith(want))) return false
+      const v = o?.volume
+      request('music', { name: want, loop: o?.loop !== false, ...(typeof v === 'number' && Number.isFinite(v) ? { volume: Math.min(1, Math.max(0, v)) } : {}) }).catch(() => {})
       return true
     },
 

@@ -51,11 +51,11 @@ export const snapOf = (p: Partial<StageSnapshot> = {}): StageSnapshot => ({
   ...p,
 })
 
-async function connected() {
+async function connected(p: Partial<StageSnapshot> = {}) {
   const site = fakeSite()
   const stage = createStage({ parent: site.parent, self: site.self })
   const ready = stage.ready()
-  site.init(snapOf())
+  site.init(snapOf(p))
   await ready
   return { site, stage }
 }
@@ -259,6 +259,43 @@ describe('请求', () => {
   })
 })
 
+describe('背景音乐切歌 music（0.7.0）', () => {
+  const bgm = [
+    { name: '家·白天｜Clear Air', url: 'https://x/a.mp3' },
+    { name: '家·深夜｜There is Romance', url: 'https://x/b.mp3' },
+  ]
+  it('曲名开头对得上：发 music 请求（名字去掉首尾空格），返回 true', async () => {
+    const { site, stage } = await connected({ bgm })
+    expect(stage.music(' 家·深夜 ')).toBe(true)
+    expect(site.lastRequest()).toMatchObject({ method: 'music', args: { name: '家·深夜', loop: true } })
+    expect(stage.music('家·白天｜Clear Air', { loop: false })).toBe(true)
+    expect(site.lastRequest()).toMatchObject({ method: 'music', args: { name: '家·白天｜Clear Air', loop: false } })
+  })
+
+  it('volume：夹在 0~1 之间带上；不传就不带（网站保持上次的）', async () => {
+    const { site, stage } = await connected({ bgm })
+    stage.music('家·深夜', { volume: 0.3 })
+    expect(site.lastRequest()).toMatchObject({ method: 'music', args: { name: '家·深夜', loop: true, volume: 0.3 } })
+    stage.music('家·深夜', { volume: 7 })
+    expect(site.lastRequest()).toMatchObject({ args: { volume: 1 } })
+    stage.music('家·深夜')
+    expect(site.lastRequest()?.args).not.toHaveProperty('volume')
+  })
+
+  it('曲库里没有、空名字：false，不发请求', async () => {
+    const { site, stage } = await connected({ bgm })
+    const n = site.requests().length
+    expect(stage.music('医院')).toBe(false)
+    expect(stage.music('  ')).toBe(false)
+    expect(site.requests().length).toBe(n)
+  })
+
+  it('还没连上：false', () => {
+    const site = fakeSite()
+    expect(createStage({ parent: site.parent, self: site.self }).music('家·深夜')).toBe(false)
+  })
+})
+
 describe('打开网站工具 open / 网站地址 siteUrl', () => {
   it('连上之后：发 open 请求，返回 true；不认识的工具名不发', async () => {
     const { site, stage } = await connected()
@@ -272,6 +309,12 @@ describe('打开网站工具 open / 网站地址 siteUrl', () => {
   it('还没连上：false', () => {
     const site = fakeSite()
     expect(createStage({ parent: site.parent, self: site.self }).open('mod')).toBe(false)
+  })
+
+  it('open(\'bgm\')（0.7.0）：打开网站的背景音乐播放器', async () => {
+    const { site, stage } = await connected()
+    expect(stage.open('bgm')).toBe(true)
+    expect(site.lastRequest()).toMatchObject({ method: 'open', args: { tool: 'bgm' } })
   })
 
   it('siteUrl：连上前只给路径，连上后拼网站地址', async () => {

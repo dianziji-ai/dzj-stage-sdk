@@ -11,6 +11,6 @@ describe('桥消息', () => {
   })
 
   it('网站能打开的工具就这五个', () => {
-    expect([...STAGE_TOOLS]).toEqual(['model', 'mod', 'session', 'memory', 'chat'])
+    expect([...STAGE_TOOLS]).toEqual(['model', 'mod', 'session', 'memory', 'chat', 'bgm'])
   })
 })

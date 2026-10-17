@@ -56,7 +56,8 @@ export type StageSetup = { text: string; fields: { key: string; label: string; v
 /** 卡上的一条快捷指令（编辑器「快捷指令」）：mode＝fill 填进输入框等玩家改（缺省）/ send 直接发 */
 export type StageShortcut = { label: string; command: string; mode: 'fill' | 'send' }
 /** 卡上背景音乐曲库里的一首（编辑器「背景音乐」）：第一首＝默认播的那首 */
-export type StageTrack = { name: string; url: string }
+/** credit（0.7.0）＝作者填的署名 / 授权（如「Kevin MacLeod · CC BY 4.0」），没填或老网站＝'' */
+export type StageTrack = { name: string; url: string; credit?: string }
 /** 卡上角色包里的一位（编辑器「角色包」）：names＝名字和别名，image＝立绘，desc＝作者写的简介 */
 /** 角色包的一行。voice（0.4.0）＝网站给这个角色配了声音（声音工坊），stage.speak 能念它的台词；老网站没这项＝false */
 export type StageCharacter = { names: string[]; image: string; desc: string; voice: boolean }
