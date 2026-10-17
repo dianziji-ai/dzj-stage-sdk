@@ -1,6 +1,6 @@
 {
   "name": "@dianziji/stage-voice",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "电子姬舞台的角色配音：一个 hook 管检查（字数 / 没配声音 / 还没写完）、排队（同时只请求一句、最多预取下一句）、播放、出错一次就停；设置并在 stage-settings 的「配音」一节",
   "license": "SEE LICENSE IN LICENSE",
   "type": "module",

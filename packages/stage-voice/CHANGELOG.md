@@ -2,6 +2,12 @@
 
 官方维护的版本记录，发布在 npm。升级：`npm update @dianziji/stage`（或对应包名）。新版本由 Changesets 自动生成在最上面。
 
+## 0.1.2
+
+### Patch Changes
+
+- 3e5b1a7: useVoice：外面盖了浮层（paused）只是停一下，念过的那句关上浮层后不再从头重念；关掉配音 / 跳过才算没念过。
+
 ## 0.1.1
 
 ### Patch Changes
