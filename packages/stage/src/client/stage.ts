@@ -4,11 +4,13 @@
  * 只用这一层（Vue / 原生 JS / 自己管状态）就从 @dianziji/stage/client 引。消息格式见 protocol.ts、docs/bridge.md。
  */
 import { isBridgeMessage, PROTOCOL, STAGE_TOOLS, type StageMethod, type StageTool, type ToSite } from './protocol'
-import type { StageErrorCode, StageGallery, StageSave, StageSnapshot, StageSpeech } from './types'
+import type { StageErrorCode, StageFound, StageGallery, StageSave, StageSnapshot, StageSpeech } from './types'
 
 declare const __SDK_VERSION__: string | undefined
 /** 握手时报给网站的 SDK 版本（排查用） */
 const SDK_VERSION = typeof __SDK_VERSION__ === 'string' ? __SDK_VERSION__ : '0.4.0'
+/** find 的区 id：只能是字母数字下划线横线（和网站、后端同一条规矩） */
+const FIND_ZONE = /^[A-Za-z0-9_-]{1,64}$/
 
 /** 等网站的第一份快照最多等多久：超时＝不在网站里打开（比如直接打开了 localhost） */
 const READY_MS = 3000
@@ -83,6 +85,16 @@ export type StageClient = {
   regenerate: () => Promise<void>
   /** 读更早的历史：读到的随快照的 history 推过来 */
   older: () => Promise<void>
+  /**
+   * 按分区找回复（0.7.0）：这一局里写了某个分区的 AI 回复，从新到旧一页一页取（每页 messages 正序）。
+   * 日记、某个事件这类零零散散夹在几百轮里的分区用它：网站在库里直接查，不用把整局历史 older() 翻到头再自己解析。
+   *   zone＝区 id（卡上有的；只能是字母数字下划线横线，写错 → StageError('invalid')，不发请求）
+   *   opts.before＝往前翻：只要 id 比它小的（传上一页第一条的 id）；不传＝最新一页，这时带 total
+   *   opts.limit＝每页几条（默认 10，最多 50）
+   * 删掉 / 回溯 / 重写过的回复网站查不到，自然不在里面。一般不直接调：用 @dianziji/stage/react 的 useZoneHits。
+   * 网站还没更新到支持 find：请求被拒（invalid）或超时（network），舞台可以退回 older() 翻历史。
+   */
+  find: (zone: string, opts?: { before?: number; limit?: number }) => Promise<StageFound>
   /**
    * 存档（整份覆盖，null 清空）。存好了广播 { type: 'save', state, source }。
    * opts.source：谁存的（默认 'app'）。一般交给存档器（createSaver）处理。
@@ -254,6 +266,23 @@ export function createStage(opts: { parent?: Window; self?: Window } = {}): Stag
     stop: () => request('stop'),
     regenerate: () => request('regenerate'),
     older: () => request('older'),
+
+    async find(zone, o) {
+      const z = typeof zone === 'string' ? zone.trim() : ''
+      if (!FIND_ZONE.test(z)) {
+        const e = new StageError('invalid', `分区名不对：${String(zone)}`)
+        emit({ type: 'error', op: 'find', error: e })
+        throw e
+      }
+      const before = typeof o?.before === 'number' && o.before > 0 ? Math.floor(o.before) : 0
+      const limit = typeof o?.limit === 'number' && Number.isFinite(o.limit) ? Math.min(50, Math.max(1, Math.floor(o.limit))) : 0
+      const r = await request<Partial<StageFound> | undefined>('find', { zone: z, ...(before ? { before } : {}), ...(limit ? { limit } : {}) })
+      return {
+        messages: Array.isArray(r?.messages) ? r.messages : [],
+        hasMore: r?.hasMore === true,
+        ...(typeof r?.total === 'number' ? { total: r.total } : {}),
+      }
+    },
 
     async save(state, o) {
       const r = await request<{ size: number }>('save', { state })

@@ -337,3 +337,62 @@ describe('report', () => {
     expect(fn).toHaveBeenCalledWith({ type: 'error', op: 'turn', error: expect.any(StageError) })
   })
 })
+
+describe('按分区找回复 find（0.7.0）', () => {
+  it('发 find 请求（分区名去空格、before / limit 规整），回来的结果原样给', async () => {
+    const { site, stage } = await connected()
+    const p = stage.find(' diary ', { before: 120.7, limit: 999 })
+    expect(site.lastRequest()).toMatchObject({ method: 'find', args: { zone: 'diary', before: 120, limit: 50 } })
+    const msgs = [{ id: 3, role: 'assistant', kind: null, content: '<diary>早</diary>' }]
+    site.reply(site.lastRequest().id!, { messages: msgs, hasMore: true })
+    await expect(p).resolves.toEqual({ messages: msgs, hasMore: true })
+  })
+
+  it('不传 before / limit：只带分区名；第一页带 total', async () => {
+    const { site, stage } = await connected()
+    const p = stage.find('diary')
+    expect(site.lastRequest().args).toEqual({ zone: 'diary' })
+    site.reply(site.lastRequest().id!, { messages: [], hasMore: false, total: 0 })
+    await expect(p).resolves.toEqual({ messages: [], hasMore: false, total: 0 })
+  })
+
+  it('乱的 before / limit 不带：负数、0、NaN', async () => {
+    const { site, stage } = await connected()
+    void stage.find('diary', { before: -3, limit: Number.NaN })
+    expect(site.lastRequest().args).toEqual({ zone: 'diary' })
+    void stage.find('diary', { limit: 0 })
+    expect(site.lastRequest().args).toEqual({ zone: 'diary', limit: 1 })
+  })
+
+  it('网站回的缺字段：补成空的（老网站 / 出错不会拿到 undefined）', async () => {
+    const { site, stage } = await connected()
+    const p = stage.find('diary')
+    site.reply(site.lastRequest().id!)
+    await expect(p).resolves.toEqual({ messages: [], hasMore: false })
+  })
+
+  it('分区名不对：invalid，不发请求，广播 error', async () => {
+    const { site, stage } = await connected()
+    const events: StageEvent[] = []
+    stage.on((e) => events.push(e))
+    for (const z of ['', '  ', 'di%ary', '<diary>', 'a'.repeat(65)]) await expect(stage.find(z)).rejects.toMatchObject({ code: 'invalid' })
+    expect(site.requests().filter((r) => r.method === 'find')).toEqual([])
+    expect(events.every((e) => e.type === 'error' && e.op === 'find')).toBe(true)
+  })
+
+  it('网站拒了（老网站不认识 find）：照原样失败', async () => {
+    const { site, stage } = await connected()
+    const p = stage.find('diary')
+    site.refuse(site.lastRequest().id!, 'invalid', '不认识的请求：find')
+    await expect(p).rejects.toMatchObject({ code: 'invalid' })
+  })
+
+  it('网站没回（更老的网站直接不理）：超时 network', async () => {
+    vi.useFakeTimers()
+    const { stage } = await connected()
+    const p = stage.find('diary')
+    const fail = expect(p).rejects.toMatchObject({ code: 'network' })
+    await vi.advanceTimersByTimeAsync(15_100)
+    await fail
+  })
+})

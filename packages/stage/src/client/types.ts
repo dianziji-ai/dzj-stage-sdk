@@ -19,6 +19,16 @@ export type StageMessage = {
   spend?: StageSpend | null
 }
 
+/**
+ * stage.find 的一页（0.7.0）：这一局里写了某个分区的 AI 回复。
+ * messages 正序（旧→新）；hasMore＝更早还有；total＝这一局一共几条，只有第一页（不带 before）有。
+ */
+export type StageFound = {
+  messages: StageMessage[]
+  hasMore: boolean
+  total?: number
+}
+
 /** 一轮的消耗。in_* / out_cost 来自结算流水，老消息查不到是 null（只有总能量和输出 token） */
 export type StageSpend = {
   /** 这一轮一共扣的能量 */

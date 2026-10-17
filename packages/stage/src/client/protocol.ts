@@ -19,8 +19,8 @@ export const PROTOCOL = 1
 export type StageTool = 'model' | 'mod' | 'session' | 'memory' | 'chat' | 'bgm' | 'voice'
 export const STAGE_TOOLS: readonly StageTool[] = ['model', 'mod', 'session', 'memory', 'chat', 'bgm', 'voice']
 
-/** 舞台能请网站做的事（speak＝0.4.0 角色配音 · music＝0.7.0 背景音乐切歌） */
-export type StageMethod = 'send' | 'stop' | 'regenerate' | 'older' | 'save' | 'gallery' | 'open' | 'speak' | 'music'
+/** 舞台能请网站做的事（speak＝0.4.0 角色配音 · music＝0.7.0 背景音乐切歌 · find＝0.7.0 按分区找回复） */
+export type StageMethod = 'send' | 'stop' | 'regenerate' | 'older' | 'save' | 'gallery' | 'open' | 'speak' | 'music' | 'find'
 
 type Envelope<T extends string, D> = { dzj: 'stage'; v: typeof PROTOCOL; type: T } & D
 
