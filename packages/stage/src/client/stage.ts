@@ -109,7 +109,7 @@ export type StageClient = {
    * 一般不直接调：用 @dianziji/stage-voice 的 useVoice，它管检查、排队、预取、出错就停。
    */
   speak: (line: { who: string; text: string; emotion?: string }) => Promise<StageSpeech>
-  /** 打开网站自己的工具（换模型、挂 MOD、本局、记忆、切到对话、背景音乐播放器）。舞台不用自己做这些面板。没连上网站＝false */
+  /** 打开网站自己的工具（换模型、挂 MOD、本局、记忆、切到对话、背景音乐播放器、购买语音包、回到卡的主页 launch）。舞台不用自己做这些面板。没连上网站＝false */
   open: (tool: StageTool) => boolean
   /**
    * 背景音乐切歌（0.7.0）：请网站自己的播放器换到卡曲库（snap.bgm）里的某一首，淡出旧曲再换。
